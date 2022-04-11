@@ -1,6 +1,23 @@
 import React,{useState,useEffect} from 'react'
 import axios from 'axios'
 
+const Weather = ({city}) => {
+const[weatherPlace,setWEatherPlace] = useState([])
+const hook2 = () => {
+  axios.get(`https://openweathermap.org/`)
+  .then(response => {
+    setWEatherPlace(response.data)
+  })
+}
+useEffect(hook2,[])
+console.log(weatherPlace)
+return (
+  <div>
+
+  </div>
+)
+}
+
 const CountriesWrite = ({setSearchWord,showCountries}) => {
   if (showCountries.length === 1) {
     return (
@@ -20,8 +37,10 @@ const CountriesWrite = ({setSearchWord,showCountries}) => {
         )}
         </ul>
         <div>
-        <img src={showCountries[0].flags.png} height="100" width="100" />
+        <img alt="title" src={showCountries[0].flags.png} height="100" width="100" />
         </div>
+        <h3>Weather in {showCountries[0].capital.toString()}</h3>
+        <Weather city={showCountries[0].capital.toString()} /> 
         </div>
       </div>
     )

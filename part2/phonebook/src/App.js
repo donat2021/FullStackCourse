@@ -2,7 +2,7 @@ import React, {useState,useEffect} from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
-import axios from 'axios'
+import personService from './services/persons'
 
 
 const App = () => {
@@ -10,17 +10,28 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newnumber, setNewNumber] = useState('')
   const [newSearch, setNewSearch] = useState('')
-  const hook = () => {
-    console.log('effect')
-    axios
-    .get('http://localhost:3001/persons')
-    .then(response => {
-      setPersons(response.data)
-    })
-    console.log('promise fulfilled')
-  }
 
-  useEffect(hook,[])
+  useEffect(() => {
+    personService
+    .getAll()
+    .then(initialPersons => {
+      setPersons(initialPersons)
+    })
+  },[])
+
+  const deleteAccount = (event) => {
+    event.preventDefault()
+    const id = parseInt(event.target.value)
+    const personName = persons.find(person => person.id === id)
+    if(window.confirm(`Delete ${personName.name}?`)){
+      personService
+      .remove(id)
+      .then(response => {
+          setPersons(persons.filter(person => person.id !== id))
+      })
+    }
+
+  }
 
   const personTextbox = persons.filter(person => person.name.includes(newSearch))
 
@@ -33,12 +44,23 @@ const App = () => {
         name: newName,
         number: newnumber
     }
-      setPersons(persons.concat(nameObject))
+    personService
+    .create(nameObject)
+    .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+    })
       setNewName('')
       setNewNumber('')
     }
     else{
-      window.alert(window.alert(newName + ' is already added to phonebook'))
+      if(window.confirm(`${newName} is already added to the phonebook replace the old number with the new one ?`))
+      {
+        const changedData = {...sameName,number:newnumber}
+        personService.replace(changedData)
+        .then(replaceData => {
+          setPersons(persons.map(person => person.id===replaceData.id?replaceData:person))
+        })
+      }
     }
   }
 
@@ -66,7 +88,7 @@ const App = () => {
       handleNoteChange={handleNoteChange} newNumber={newnumber}
       handleNoteChangeNumber={handleNoteChangeNumber}/>
       <h2>Numbers</h2>
-      <Persons personTextbox={personTextbox} />
+      <Persons personTextbox={personTextbox} deleteAccount={deleteAccount}/>
     </div>
   )
 }
