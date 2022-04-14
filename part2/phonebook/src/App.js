@@ -3,6 +3,7 @@ import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import personService from './services/persons'
+import Notification from './components/Notification'
 
 
 const App = () => {
@@ -10,6 +11,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newnumber, setNewNumber] = useState('')
   const [newSearch, setNewSearch] = useState('')
+  const [confirmMessage,setConfirmMessage] = useState(null)
 
   useEffect(() => {
     personService
@@ -51,6 +53,10 @@ const App = () => {
     })
       setNewName('')
       setNewNumber('')
+      setConfirmMessage(`Added ${newName}.`)
+        setTimeout(() => {
+          setConfirmMessage(null)
+        },4000)
     }
     else{
       if(window.confirm(`${newName} is already added to the phonebook replace the old number with the new one ?`))
@@ -59,6 +65,17 @@ const App = () => {
         personService.replace(changedData)
         .then(replaceData => {
           setPersons(persons.map(person => person.id===replaceData.id?replaceData:person))
+          setConfirmMessage(`Updated ${newName}.`)
+          setTimeout(() => {
+            setConfirmMessage(null)
+          },4000) 
+        })
+        .catch(error => {
+          setPersons(persons.filter(person => person.name !== newName))
+          setConfirmMessage(`Information of ${newName} was already deleted from the server`)
+          setTimeout(() => {
+            setConfirmMessage(null)
+          },7000)
         })
       }
     }
@@ -81,6 +98,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={confirmMessage} />
       <Filter header="filter shown with"
       name={newSearch} handleFunction={handleSearchField} />
       <h2>Add a New</h2>
@@ -89,6 +107,7 @@ const App = () => {
       handleNoteChangeNumber={handleNoteChangeNumber}/>
       <h2>Numbers</h2>
       <Persons personTextbox={personTextbox} deleteAccount={deleteAccount}/>
+      
     </div>
   )
 }
