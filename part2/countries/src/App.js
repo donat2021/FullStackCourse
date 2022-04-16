@@ -4,7 +4,6 @@ import axios from 'axios'
 const Weather = ({city}) => {
 const[weatherPlace,setWEatherPlace] = useState(null)
 const hook2 = () => {
-  /*const apiKey="c9ef517abfa26e8a6c70aa0549f226fc"*/
   const api_key = process.env.REACT_APP_API_KEY
   axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${api_key}&units=metric`)
   .then(response => {
