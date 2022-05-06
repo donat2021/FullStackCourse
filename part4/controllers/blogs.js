@@ -1,27 +1,40 @@
-const express = require('express')
-const cors = require('cors')
-const app = express()
+const blogsRouter = require('express').Router()
 const Blog = require('../model/blog')
 
-app.use(cors())
-app.use(express.json())
-
-app.get('/api/blogs', (request, response) => {
-  Blog
-    .find({})
-    .then(blogs => {
-      response.json(blogs)
-    })
+blogsRouter.get('/', async(request, response) => {
+    const blogs = await Blog.find({})
+    response.json(blogs)
+})
+blogsRouter.get('/:id', async (request, response, next) => {
+  try {
+    const blog = await Blog.findById(request.params.id)
+    if (blog) {
+      response.json(blog.toJSON())
+    } else {
+      response.status(404).end()
+    }
+  } catch(exception) {
+    next(exception)
+  }
 })
 
-app.post('/api/blogs', (request, response) => {
-  const blog = new Blog(request.body)
-
-  blog
-    .save()
-    .then(result => {
-      response.status(201).json(result)
-    })
+blogsRouter.post('/', async(request, response,next) => {
+  const body= request.body
+  const blog = new Blog({
+    title: body.title,
+    author :body.author,
+    url: body.url,
+    likes : body.likes === undefined ? 0 : body.likes
+  }
+  )
+  try {
+  const savedBlog = await blog.save()
+  response.status(201).json(savedBlog)
+  }
+  catch(exception)
+  {
+  next(exception)
+  }
 })
 
-module.exports = app
+module.exports = blogsRouter
