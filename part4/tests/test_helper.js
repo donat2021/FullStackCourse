@@ -15,14 +15,6 @@ const initialBlogs = [
   }
 ]
 
-/*const nonExistingBlog = async () => {
-  const blog = new Note({ content: 'willremovethissoon', date: new Date() })
-  await blog.save()
-  await blog.remove()
-
-  return blog._id.toString()
-}*/
-
 const blogsInDb = async () => {
   const blogs = await Blog.find({})
   return blogs.map(blog => blog.toJSON())

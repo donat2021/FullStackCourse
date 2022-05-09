@@ -5,36 +5,51 @@ blogsRouter.get('/', async(request, response) => {
     const blogs = await Blog.find({})
     response.json(blogs)
 })
-blogsRouter.get('/:id', async (request, response, next) => {
-  try {
+blogsRouter.get('/:id', async (request, response) => {
     const blog = await Blog.findById(request.params.id)
     if (blog) {
       response.json(blog.toJSON())
     } else {
       response.status(404).end()
     }
-  } catch(exception) {
-    next(exception)
+  })
+
+blogsRouter.post('/', async(request, response) => {
+  const body= request.body
+  if(!body.title && !body.url)
+  {
+    response.status(400).send('Bad Request')
+  } 
+  else
+  {
+    const blog = new Blog({
+      title: body.title,
+      author: body.author,
+      url: body.url,
+      likes: body.likes === undefined ? 0 : body.likes
+    })
+    const savedBlog = await blog.save()
+    response.status(201).json(savedBlog)
   }
+})
+blogsRouter.delete('/:id', async (request, response) => {
+  await Blog.findByIdAndRemove(request.params.id)
+  response.status(204).end()
 })
 
-blogsRouter.post('/', async(request, response,next) => {
-  const body= request.body
-  const blog = new Blog({
+blogsRouter.put('/:id',async (request, response) => {
+  const body = request.body
+
+  const newBlog = {
     title: body.title,
-    author :body.author,
+    author: body.author,
     url: body.url,
-    likes : body.likes === undefined ? 0 : body.likes
+    likes: body.likes === undefined ? 0 : body.likes
   }
-  )
-  try {
-  const savedBlog = await blog.save()
-  response.status(201).json(savedBlog)
-  }
-  catch(exception)
-  {
-  next(exception)
-  }
+
+  const updatedBlog= await Blog.findByIdAndUpdate(request.params.id, newBlog, { new: true })
+  response.json(updatedBlog)
 })
+
 
 module.exports = blogsRouter

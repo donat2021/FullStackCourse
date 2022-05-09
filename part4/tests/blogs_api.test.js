@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
 const supertest = require('supertest')
+const mongoose = require('mongoose')
 const app = require('../app')
 //const app = require('../controllers/blogs')
 const helper=  require('../tests/test_helper')
@@ -86,7 +86,36 @@ test('same blogs amount', async () => {
      0
     )
   })
+  test('when title or url is missing', async () => {
+    const newBlog = {
+        author: "someone",
+        likes: 7,
+    }
+    await api.post('/api/blogs')
+            .send(newBlog)
+            .expect(400)
+            .expect('Bad Request')
+})
+describe('deletion of a note', () => {
+  test('succeeds with status code 204 if id is valid', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
 
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    expect(blogsAtEnd).toHaveLength(
+      helper.initialBlogs.length - 1
+    )
+
+    const contents = blogsAtEnd.map(r => r.title)
+
+    expect(contents).not.toContain(blogToDelete.title)
+  })
+})
 
 afterAll(() => {
   mongoose.connection.close()
