@@ -116,6 +116,22 @@ describe('deletion of a note', () => {
     expect(contents).not.toContain(blogToDelete.title)
   })
 })
+describe('Testing update request:', () => {
+  test('Updating likes in a post', async () => {
+    const currentBlogsList = await helper.blogsInDb()
+    const blogToUpdate = currentBlogsList[0]
+    blogToUpdate.likes = 666
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(200)
+      const blogsAfterUpdate = await helper.blogsInDb()
+    const contents = blogsAfterUpdate.map(r => r.likes)
+
+    expect(contents).toContain(666)
+  }, 100000)
+})
 
 afterAll(() => {
   mongoose.connection.close()
